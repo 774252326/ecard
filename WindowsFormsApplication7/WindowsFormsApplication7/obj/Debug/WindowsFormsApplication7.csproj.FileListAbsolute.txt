@@ -21,3 +21,5 @@ C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[
 C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.Properties.Resources.resources
 C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.csproj.GenerateResource.Cache
 C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.csprojResolveAssemblyReference.cache
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7\WindowsFormsApplication7\bin\Debug\Newtonsoft.Json.dll
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7\WindowsFormsApplication7\bin\Debug\Newtonsoft.Json.xml

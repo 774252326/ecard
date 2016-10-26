@@ -35,14 +35,16 @@ namespace WindowsFormsApplication7
         //public Encoding ecg = Encoding.GetEncoding("gb2312");
         //public Encoding ecg = Encoding.UTF8;
         //ArrayList buf;
+        //private int cursel = 0;
 
         ArrayList clabel;
         ArrayList cardmemo;
 
         //ArrayList fplist;
         ArrayList imglist;
-
-        //private int cursel = 0;
+        string[] errstr1 = new[] {"the selected item cannot be removed","此项不可删除"};
+        string[] errstr2 = new[] {"no item selected","未选中项"};
+        string[] savstr1 = new[] { " saved", " 已保存" };
 
         public Form1()
         {
@@ -55,6 +57,8 @@ namespace WindowsFormsApplication7
             listView1.Columns.Add(colHead);
 
             setwin(lang);
+            updbtn();
+
             clabel = new ArrayList();
             setCardLabel(ref clabel);
 
@@ -64,7 +68,7 @@ namespace WindowsFormsApplication7
         }
 
 
-
+        //set button and list label
         private void setwin(int cc)
         {
             switch (cc)
@@ -81,6 +85,7 @@ namespace WindowsFormsApplication7
                     button7.Text = "delete";
                     button8.Text = "change logo";
                     button9.Text = "delete logo";
+                    button10.Text = "import";
                     break;
                 case 1:
                     listView1.Columns[0].Text = "项";
@@ -94,14 +99,14 @@ namespace WindowsFormsApplication7
                     button7.Text = "删除";
                     button8.Text = "修改标志";
                     button9.Text = "删除标志";
+                    button10.Text = "导入";
                     break;
                 default:
                     break;
             }
-            updbtn();
         }
 
-
+        //setup item label in list 
         private void setCardLabel(ref ArrayList labelAl)
         {
             Card cardLabel = new Card();
@@ -125,6 +130,200 @@ namespace WindowsFormsApplication7
         }
 
 
+        #region operation response
+        //add name card
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Form4 frm4 = new Form4();
+            frm4.setwin(lang);
+            frm4.settext(clabel, lang);
+            frm4.ShowDialog();
+
+            if (frm4.Value != null)
+            {
+                cardmemo.Add(frm4.Value);
+                imglist.Add(null);
+
+                updbox();
+                listBox1.SelectedIndex = cardmemo.Count - 1;
+            }
+
+        }
+        //open file
+        private void button2_Click(object sender, EventArgs e)
+        {
+            readfile(false);
+        }
+        //save file
+        private void button3_Click(object sender, EventArgs e)
+        {
+
+            if (String.IsNullOrEmpty(filePath))
+            {
+                Stream myStream;
+                SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+
+                saveFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                saveFileDialog1.FilterIndex = 1;
+                saveFileDialog1.RestoreDirectory = true;
+
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    if ((myStream = saveFileDialog1.OpenFile()) != null)
+                    {
+                        // Code to write the stream goes here.
+                        filePath = saveFileDialog1.FileName;
+                        myStream.Close();
+                    }
+                }
+
+            }
+
+            CardBook ppp = new CardBook();
+            ppp.Al2CardBook(cardmemo);
+            ppp.Al2CardBookLogo(imglist);
+
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(ppp));
+            MessageBox.Show(filePath + savstr1[lang]);
+        }
+        //delete items
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count > 0)
+            {
+                ArrayList buf = (ArrayList)cardmemo[listBox1.SelectedIndex];
+                delitms(ref buf, listView1.SelectedIndices);
+                updview();
+            }
+            else
+                MessageBox.Show(errstr2[lang], "提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        //add item
+        private void button5_Click(object sender, EventArgs e)
+        {
+            Form3 frm3 = new Form3();
+            frm3.setwin(lang);
+            for (int i = 5; i < clabel.Count; i++)
+            {
+                frm3.setcombo(((ArrayList)clabel[i])[lang].ToString());
+            }
+            frm3.ShowDialog();
+
+            if (frm3.Value != null)
+            {
+                ArrayList buf = (ArrayList)cardmemo[listBox1.SelectedIndex];
+                additm(ref buf, frm3.Index + 5, frm3.Value);
+
+                updview();
+            }
+
+
+        }
+        //change item
+        private void button6_Click(object sender, EventArgs e)
+        {
+
+            if (listView1.SelectedItems.Count > 0)
+            {
+                Form3 frm3 = new Form3();
+                frm3.setwin(lang);
+                frm3.setcombo(listView1.SelectedItems[0].SubItems[0].Text);
+                frm3.settext(listView1.SelectedItems[0].SubItems[1].Text);
+                frm3.ShowDialog();
+
+                if (frm3.Value != null)
+                {
+                    ArrayList buf = (ArrayList)cardmemo[listBox1.SelectedIndex];
+                    chgitm(ref buf, listView1.SelectedIndices[0], frm3.Value);
+
+                    if (listView1.SelectedIndices[0] == 0)
+                    {
+                        updbox();
+                    }
+                    else
+                    {
+                        updview();
+                    }
+                }
+
+            }
+            else
+                MessageBox.Show(errstr2[lang], "提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+        }
+        //Delete name card
+        private void button7_Click(object sender, EventArgs e)
+        {
+            if (listBox1.SelectedItems.Count > 0)
+            {
+                ListBox.SelectedIndexCollection indx = listBox1.SelectedIndices;
+                delcards(ref cardmemo, indx);
+                delcards(ref imglist, indx);
+                //cursel = 0;
+
+                updbox();
+
+            }
+            else
+                MessageBox.Show(errstr2[lang], "提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        //add or change logo image
+        private void button8_Click(object sender, EventArgs e)
+        {
+            if (imglist.Count > 0)
+            {
+                Stream myStream = null;
+                OpenFileDialog openFileDialog1 = new OpenFileDialog();
+
+                //openFileDialog1.InitialDirectory = "c:\\";
+                openFileDialog1.Filter = "jpg files (*.jpg)|*.jpg|All files (*.*)|*.*";
+                openFileDialog1.FilterIndex = 1;
+                openFileDialog1.RestoreDirectory = true;
+
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        if ((myStream = openFileDialog1.OpenFile()) != null)
+                        {
+                            imglist[listBox1.SelectedIndex] = Image.FromStream(myStream);
+                            updimg();
+                            myStream.Close();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
+                    }
+                }
+            }
+
+        }
+        //delete image logo
+        private void button9_Click(object sender, EventArgs e)
+        {
+            if (imglist.Count > 0)
+            {
+                imglist[listBox1.SelectedIndex] = null;
+                updimg();
+            }
+        }
+        //import file
+        private void button10_Click(object sender, EventArgs e)
+        {
+            readfile(true);
+        }
+        //change selection
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //cursel = listBox1.SelectedIndex;
+            updview();
+            updbtn();
+        }
+        #endregion
+
+        #region show data
+        //update listview 
         private void showcard(ArrayList al)
         {
 
@@ -168,98 +367,87 @@ namespace WindowsFormsApplication7
             }
 
         }
-
-        private void button2_Click(object sender, EventArgs e)
+        //update listbox
+        public int showname(ref ArrayList cm)
         {
-
-            Stream myStream = null;
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-
-            //openFileDialog1.InitialDirectory = "c:\\";
-            openFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
-            openFileDialog1.FilterIndex = 1;
-            openFileDialog1.RestoreDirectory = true;
-
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            foreach (ArrayList onecard in cm)
             {
-                try
-                {
-                    if ((myStream = openFileDialog1.OpenFile()) != null)
-                    {
-
-                        filePath = openFileDialog1.FileName;
-
-                        CardBook c1 = JsonConvert.DeserializeObject<CardBook>(File.ReadAllText(filePath));
-                        c1.CardBook2Al(ref cardmemo);
-                        c1.CardBookLogo2Al(ref imglist);
-                        //cursel = cardmemo.Count - 1;
-
-                        
-
-                        updbox();
-                        listBox1.SelectedIndex = cardmemo.Count - 1;
-                        tabControl1.SelectedTab.Text = filePath;
-                        myStream.Close();
-
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
-                }
+                string cname = ((ArrayList)onecard[0])[lang].ToString();
+                listBox1.Items.Add(cname);
             }
+            //if (cursel < listBox1.Items.Count)
+            //listBox1.SelectedIndex = cursel;
 
+            return listBox1.SelectedIndex;
 
         }
-
-        private void button3_Click(object sender, EventArgs e)
+        //get name string from arraylist
+        public string getname(int cs)
         {
-
-
-
-            if (String.IsNullOrEmpty(filePath))
-            {
-                Stream myStream;
-                SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-
-                saveFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
-                saveFileDialog1.FilterIndex = 1;
-                saveFileDialog1.RestoreDirectory = true;
-
-                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-                {
-                    if ((myStream = saveFileDialog1.OpenFile()) != null)
-                    {
-                        // Code to write the stream goes here.
-                        filePath = saveFileDialog1.FileName;
-                        myStream.Close();
-
-
-                    }
-                }
-
-            }
-
-            CardBook ppp = new CardBook();
-            ppp.Al2CardBook(cardmemo);
-            ppp.Al2CardBookLogo(imglist);
-
-            File.WriteAllText(filePath, JsonConvert.SerializeObject(ppp));
-
+            return ((ArrayList)((ArrayList)cardmemo[cs])[0])[lang].ToString();
         }
-
-        private void button4_Click(object sender, EventArgs e)
+        //update listview and picturebox
+        public void updview()
         {
-            if (listView1.SelectedItems.Count > 0)
+            listView1.Items.Clear();
+            pictureBox1.Image = null;
+            if (listBox1.SelectedIndex >= 0)
             {
                 ArrayList buf = (ArrayList)cardmemo[listBox1.SelectedIndex];
-                delitms(ref buf, listView1.SelectedIndices);
-                updview();
+                showcard(buf);
+                updimg();
+            }
+        }
+        //update whole windows
+        public void updbox()
+        {
+            listBox1.Items.Clear();
+            showname(ref cardmemo);
+            updview();
+            updbtn();
+        }
+        //update picturebox
+        public void updimg()
+        {
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox1.Image = (Image)imglist[listBox1.SelectedIndex];
+        }
+        //update GUI button state
+        public void updbtn()
+        {
+            tabControl1.SelectedTab.Text = filePath;
+            if (listBox1.SelectedIndex >= 0 && listBox1.Items.Count > 0)
+            {
+                button4.Enabled = true;
+                button5.Enabled = true;
+                button6.Enabled = true;
+                button7.Enabled = true;
+                button8.Enabled = true;
+                button9.Enabled = true;
             }
             else
-                MessageBox.Show("请先选择要修改的某一行！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
+            {
+                button4.Enabled = false;
+                button5.Enabled = false;
+                button6.Enabled = false;
+                button7.Enabled = false;
+                button8.Enabled = false;
+                button9.Enabled = false;
+            }
 
+        }
+        #endregion
+
+        #region change data
+        //add item
+        public void additm(ref ArrayList al, int i, string val)
+        {
+            ArrayList itmal = (ArrayList)al[i];
+            itmal.Add(val);
+            if (i < 6)
+                itmal.Add(val);
+        }
+        //delete items
         public void delitms(ref ArrayList al, ListView.SelectedIndexCollection indice)
         {
             int i = 0;
@@ -270,9 +458,13 @@ namespace WindowsFormsApplication7
                     delitm(ref al, ind - i);
                     i++;
                 }
+                else
+                {
+                    MessageBox.Show(errstr1[lang]);
+                }
             }
         }
-
+        //delete one item
         public void delitm(ref ArrayList al, int i)
         {
             ///foreach (ArrayList itmal in al)
@@ -323,70 +515,7 @@ namespace WindowsFormsApplication7
 
 
         }
-
-        private void button5_Click(object sender, EventArgs e)
-        {
-            Form3 frm3 = new Form3();
-            frm3.setwin(lang);
-            for (int i = 5; i < clabel.Count; i++)
-            {
-                frm3.setcombo(((ArrayList)clabel[i])[lang].ToString());
-            }
-            frm3.ShowDialog();
-
-            if (frm3.Value != null)
-            {
-                ArrayList buf = (ArrayList)cardmemo[listBox1.SelectedIndex];
-                additm(ref buf, frm3.Index + 5, frm3.Value);
-
-                updview();
-            }
-
-
-        }
-
-
-        public void additm(ref ArrayList al, int i, string val)
-        {
-            ArrayList itmal = (ArrayList)al[i];
-            itmal.Add(val);
-            if (i < 6)
-                itmal.Add(val);
-        }
-
-        private void button6_Click(object sender, EventArgs e)
-        {
-
-            if (listView1.SelectedItems.Count > 0)
-            {
-                Form3 frm3 = new Form3();
-                frm3.setwin(lang);
-                frm3.setcombo(listView1.SelectedItems[0].SubItems[0].Text);
-                frm3.settext(listView1.SelectedItems[0].SubItems[1].Text);
-                frm3.ShowDialog();
-
-                if (frm3.Value != null)
-                {
-                    ArrayList buf = (ArrayList)cardmemo[listBox1.SelectedIndex];
-                    chgitm(ref buf, listView1.SelectedIndices[0], frm3.Value);
-
-                    if (listView1.SelectedIndices[0] == 0)
-                    {
-                        updbox();
-                    }
-                    else
-                    {
-                        updview();
-                    }
-                }
-
-            }
-            else
-                MessageBox.Show("请先选择要修改的某一行！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-        }
-
-
+        //change item
         public void chgitm(ref ArrayList al, int i, string val)
         {
             ///foreach (ArrayList itmal in al)
@@ -433,69 +562,7 @@ namespace WindowsFormsApplication7
             }
 
         }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            Form4 frm4 = new Form4();
-            frm4.setwin(lang);
-            frm4.settext(clabel, lang);
-            frm4.ShowDialog();
-
-            if (frm4.Value != null)
-            {
-                cardmemo.Add(frm4.Value);
-                imglist.Add(null);
-                
-                updbox();
-                listBox1.SelectedIndex = cardmemo.Count - 1;
-            }
-
-
-        }
-
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            //cursel = listBox1.SelectedIndex;
-            updview();
-            updbtn();
-        }
-
-        public int showname(ref ArrayList cm)
-        {
-            foreach (ArrayList onecard in cm)
-            {
-                string cname = ((ArrayList)onecard[0])[lang].ToString();
-                listBox1.Items.Add(cname);
-            }
-            //if (cursel < listBox1.Items.Count)
-                //listBox1.SelectedIndex = cursel;
-
-            return listBox1.SelectedIndex;
-
-        }
-
-        public string getname(int cs)
-        {
-            return ((ArrayList)((ArrayList)cardmemo[cs])[0])[lang].ToString();
-        }
-
-        private void button7_Click(object sender, EventArgs e)
-        {
-            if (listBox1.SelectedItems.Count > 0)
-            {
-                ListBox.SelectedIndexCollection indx = listBox1.SelectedIndices;
-                delcards(ref cardmemo, indx);
-                delcards(ref imglist, indx);
-                //cursel = 0;
-
-                updbox();
-
-            }
-            else
-                MessageBox.Show("请先选择要修改的某一行！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-
-
+        //Delete name card
         public void delcards(ref ArrayList al, ListBox.SelectedIndexCollection indice)
         {
             int i = 0;
@@ -505,97 +572,47 @@ namespace WindowsFormsApplication7
                 i++;
             }
         }
-
-
-        public void updview()
+        //read data
+        public void readfile(bool append)
         {
-            listView1.Items.Clear();
-            pictureBox1.Image = null;
-            if (listBox1.SelectedIndex >= 0)
+            Stream myStream = null;
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+
+            //openFileDialog1.InitialDirectory = "c:\\";
+            openFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+            openFileDialog1.FilterIndex = 1;
+            openFileDialog1.RestoreDirectory = true;
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                ArrayList buf = (ArrayList)cardmemo[listBox1.SelectedIndex];
-                showcard(buf);
-                updimg();
-            }
-        }
-
-        public void updbox()
-        {
-            listBox1.Items.Clear();
-            showname(ref cardmemo);
-            updview();
-            updbtn();
-        }
-
-        public void updimg()
-        {
-            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox1.Image = (Image)imglist[listBox1.SelectedIndex];
-        }
-
-
-        private void button8_Click(object sender, EventArgs e)
-        {
-            if (imglist.Count > 0)
-            {
-                Stream myStream = null;
-                OpenFileDialog openFileDialog1 = new OpenFileDialog();
-
-                //openFileDialog1.InitialDirectory = "c:\\";
-                openFileDialog1.Filter = "jpg files (*.jpg)|*.jpg|All files (*.*)|*.*";
-                openFileDialog1.FilterIndex = 1;
-                openFileDialog1.RestoreDirectory = true;
-
-                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                try
                 {
-                    try
+                    if ((myStream = openFileDialog1.OpenFile()) != null)
                     {
-                        if ((myStream = openFileDialog1.OpenFile()) != null)
+                        CardBook c1 = JsonConvert.DeserializeObject<CardBook>(File.ReadAllText(openFileDialog1.FileName));
+                        if (!append)
                         {
-                            imglist[listBox1.SelectedIndex] = Image.FromStream(myStream);
-                            updimg();
-                            myStream.Close();
-
+                            cardmemo.Clear();
+                            imglist.Clear();
+                            filePath = openFileDialog1.FileName;
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
+                        c1.CardBook2Al(ref cardmemo);
+                        c1.CardBookLogo2Al(ref imglist);
+
+                        updbox();
+                        listBox1.SelectedIndex = cardmemo.Count - 1;
+                        myStream.Close();
+
                     }
                 }
-            }
-
-        }
-
-        private void button9_Click(object sender, EventArgs e)
-        {
-            if (imglist.Count > 0)
-            {
-                imglist[listBox1.SelectedIndex] = null;
-                updimg();
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
+                }
             }
         }
+        #endregion
 
-        public void updbtn()
-        {
-            if (listBox1.SelectedIndex >= 0 && listBox1.Items.Count > 0)
-            {
-                button4.Enabled = true;
-                button5.Enabled = true;
-                button6.Enabled = true;
-                button8.Enabled = true;
-                button9.Enabled = true;
-            }
-            else
-            {
-                button4.Enabled = false;
-                button5.Enabled = false;
-                button6.Enabled = false;
-                button8.Enabled = false;
-                button9.Enabled = false;
-            }
-
-        }
 
     }
 }
