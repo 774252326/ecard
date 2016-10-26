@@ -42,6 +42,13 @@ namespace WindowsFormsApplication3
         public uint READ_SIZE = 1000;
 
 
+
+        public byte[] readcom = {0xBB, 0x00, 0x2C, 0x00, 0x05, 0x00, 0x00, 0x00, 0x01, 0x00, 0x7E};
+        public byte[] writecom = { 0xBB, 0x00, 0x2D, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x7E };
+
+        public String readc = "BB002C000500000001007E";
+        public String writec = "BB002D000C00000001020304050607087E";
+
         public Form1()
         {
             InitializeComponent();
@@ -118,7 +125,7 @@ namespace WindowsFormsApplication3
 
 
 
-
+            textBox9.Text = "BB 00 03 00 01 00 7E";
 
         }
 
@@ -145,8 +152,8 @@ namespace WindowsFormsApplication3
         {
             // Select ASCII format
             //CheckRadioButton(IDC_RADIO_ASCII, IDC_RADIO_HEX, IDC_RADIO_ASCII);
-            radioButton1.Checked = true;
-            //radioButton2.Checked = true;
+            //radioButton1.Checked = true;
+            radioButton2.Checked = true;
         }
 
         // Set the default UART control values
@@ -1523,6 +1530,20 @@ namespace WindowsFormsApplication3
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             SetLatch();
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            textBox9.Text = readc;
+            radioButton2.Checked = true;
+            button4_Click(sender, e);
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            textBox9.Text = writec;
+            radioButton2.Checked = true;
+            button4_Click(sender, e);
         }
 
 
