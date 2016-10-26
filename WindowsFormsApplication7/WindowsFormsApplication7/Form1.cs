@@ -19,6 +19,7 @@ namespace WindowsFormsApplication7
     public partial class Form1 : Form
     {
 
+
         [DataContract]
         class Card
         {
@@ -76,10 +77,17 @@ namespace WindowsFormsApplication7
             internal string[] Mobile;
         }
 
+        [DataContract]
+        class CardBook
+        {
+            [DataMember]
+            internal Card[] C;
+        }
+
         public const int lang = 1;
 
-        //public string filePath;
-        //Card pp;
+        public string filePath;
+        //CardBook pcp;
         //Card cardLabel;
         //public Encoding ecg = Encoding.GetEncoding("gb2312");
         public Encoding ecg = Encoding.UTF8;
@@ -88,7 +96,9 @@ namespace WindowsFormsApplication7
         ArrayList clabel;
         ArrayList cardmemo;
 
-        ArrayList fplist;
+        //ArrayList fplist;
+
+        
         private int cursel=0;
 
         public Form1()
@@ -106,7 +116,7 @@ namespace WindowsFormsApplication7
             setCardLabel(ref clabel);
 
             cardmemo = new ArrayList();
-            fplist = new ArrayList();
+            //fplist = new ArrayList();
         }
 
         private void Card2Al(ref Card k, ref ArrayList al)
@@ -217,6 +227,123 @@ namespace WindowsFormsApplication7
         }
 
 
+        private void Card2Al(Card k, ref ArrayList al)
+        {
+            ArrayList itmal;
+
+            itmal = new ArrayList();
+            foreach (string val in k.Name)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+
+            itmal = new ArrayList();
+            foreach (string val in k.Prefix)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+            itmal = new ArrayList();
+            foreach (string val in k.Suffix)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+            itmal = new ArrayList();
+            foreach (string val in k.Title)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+            itmal = new ArrayList();
+            foreach (string val in k.CompanyName)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+            itmal = new ArrayList();
+            foreach (string val in k.Addr)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+            itmal = new ArrayList();
+            foreach (string val in k.CompanyWebsite)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+            itmal = new ArrayList();
+            foreach (string val in k.Email)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+            itmal = new ArrayList();
+            foreach (string val in k.MSN)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+            itmal = new ArrayList();
+            foreach (string val in k.Skype)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+            itmal = new ArrayList();
+            foreach (string val in k.CompanyPhone)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+            itmal = new ArrayList();
+            foreach (string val in k.Directline)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+            itmal = new ArrayList();
+            foreach (string val in k.Fax)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+
+            itmal = new ArrayList();
+            foreach (string val in k.Mobile)
+            {
+                itmal.Add(val);
+            }
+            al.Add(itmal);
+            //itmal = new ArrayList();
+
+
+        }
+        private void CardBook2Al(ref CardBook cb, ref ArrayList al)
+        {
+            foreach (Card k in cb.C)
+            {
+                ArrayList cardal = new ArrayList();
+                Card2Al( k, ref cardal);
+                al.Add(cardal);
+            }
+
+        }
+
         private void Al2Card(ref Card k, ref ArrayList al)
         {
             //ArrayList itmal = (ArrayList)al[0];
@@ -235,6 +362,53 @@ namespace WindowsFormsApplication7
             k.Fax = (string[])((ArrayList)al[12]).ToArray(typeof(string));
             k.Mobile = (string[])((ArrayList)al[13]).ToArray(typeof(string));
             //k.Name = (string[])((ArrayList)al[0]).ToArray(typeof(string));
+        }
+
+
+        private void Al2Card(ref Card k, ArrayList al)
+        {
+            //ArrayList itmal = (ArrayList)al[0];
+            k.Name = (string[])((ArrayList)al[0]).ToArray(typeof(string));
+            k.Prefix = (string[])((ArrayList)al[1]).ToArray(typeof(string));
+            k.Suffix = (string[])((ArrayList)al[2]).ToArray(typeof(string));
+            k.Title = (string[])((ArrayList)al[3]).ToArray(typeof(string));
+            k.CompanyName = (string[])((ArrayList)al[4]).ToArray(typeof(string));
+            k.Addr = (string[])((ArrayList)al[5]).ToArray(typeof(string));
+            k.CompanyWebsite = (string[])((ArrayList)al[6]).ToArray(typeof(string));
+            k.Email = (string[])((ArrayList)al[7]).ToArray(typeof(string));
+            k.MSN = (string[])((ArrayList)al[8]).ToArray(typeof(string));
+            k.Skype = (string[])((ArrayList)al[9]).ToArray(typeof(string));
+            k.CompanyPhone = (string[])((ArrayList)al[10]).ToArray(typeof(string));
+            k.Directline = (string[])((ArrayList)al[11]).ToArray(typeof(string));
+            k.Fax = (string[])((ArrayList)al[12]).ToArray(typeof(string));
+            k.Mobile = (string[])((ArrayList)al[13]).ToArray(typeof(string));
+            //k.Name = (string[])((ArrayList)al[0]).ToArray(typeof(string));
+        }
+
+        private void Al2CardBook(ref CardBook cb, ArrayList al)
+        {
+            //int nc=al.Count;
+            //int i;
+            Card ca;
+            //ArrayList cardal;
+            //ArrayList q=new ArrayList();
+            List<Card> w=new List<Card>();
+            //w.Add(ca);
+            //CardBook cb=new CardBook();
+
+
+            foreach (ArrayList cardal in al)
+            //for (i = 0; i < nc; i++)
+            {
+                //cardal = (ArrayList)al[i];
+                ca=new Card();
+                Al2Card(ref ca, cardal);
+                w.Add(ca);         
+                
+            }
+
+            cb.C = (Card[])(w.ToArray());
+            //return cb;
         }
 
         private void setwin(int cc)
@@ -352,30 +526,47 @@ namespace WindowsFormsApplication7
                     if ((myStream = openFileDialog1.OpenFile()) != null)
                     {
 
-                        string filePath = openFileDialog1.FileName;
+                        filePath = openFileDialog1.FileName;
 
                         StreamReader sr = new StreamReader(filePath, ecg);
                         MemoryStream stream2 = new MemoryStream(ecg.GetBytes(sr.ReadToEnd()));
-                        DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(Card));
-                        Card pp = (Card)ser.ReadObject(stream2);
+                        //DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(Card));
+                        //Card pp = (Card)ser.ReadObject(stream2);
 
-                        buf = new ArrayList();
-                        Card2Al(ref pp, ref buf);
+                        //buf = new ArrayList();
+                        //Card2Al(ref pp, ref buf);
                         
-                        cardmemo.Add(buf);
+                        //cardmemo.Add(buf);
 
-                        //listBox1.Items.Add(pp.Name[c]);
+
+                        //listBox1.Items.Clear();
+                        //cursel = cardmemo.Count - 1;
+                        //showname(ref cardmemo);
+
+                        //listView1.Items.Clear();
+                        //showcard(buf);
+
+                        //fplist.Add(filePath);
+
+                        /////////////////////////////////////////
+
+                        DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(CardBook));
+                        CardBook pcp = (CardBook)ser.ReadObject(stream2);
+
+                        //Card pp = pcp.C[0];
+
+                        CardBook2Al(ref pcp, ref cardmemo);
+
+
                         listBox1.Items.Clear();
                         cursel = cardmemo.Count - 1;
                         showname(ref cardmemo);
 
+                        buf = (ArrayList)cardmemo[cursel];
                         listView1.Items.Clear();
                         showcard(buf);
 
-                        fplist.Add(filePath);
-
-
-
+                        //////////////////////////////////////////////
                         sr.Close();
                         stream2.Close();
                         myStream.Close();
@@ -394,13 +585,21 @@ namespace WindowsFormsApplication7
         private void button3_Click(object sender, EventArgs e)
         {
 
-            Card pp = new Card();
-            buf = (ArrayList)cardmemo[cursel];
-            Al2Card(ref pp, ref buf);
+            //Card pp = new Card();
+            //buf = (ArrayList)cardmemo[cursel];
+            //Al2Card(ref pp, ref buf);
+
+            CardBook ppp = new CardBook();
+            Al2CardBook(ref ppp, cardmemo);
+
 
             MemoryStream stream1 = new MemoryStream();
-            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(Card));
-            ser.WriteObject(stream1, pp);
+            //DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(Card));
+            //ser.WriteObject(stream1, pp);
+
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(CardBook));
+            ser.WriteObject(stream1, ppp);
+
 
             //Show the JSON output.
             stream1.Position = 0;
@@ -409,11 +608,12 @@ namespace WindowsFormsApplication7
             sr.Close();
 
             
-            if (String.IsNullOrEmpty(fplist[cursel].ToString()))
-                fplist[cursel]=getname(cursel)+".txt";
+            //if (String.IsNullOrEmpty(fplist[cursel].ToString()))
+                //fplist[cursel]=getname(cursel)+".txt";
 
-            StreamWriter sw = new StreamWriter(fplist[cursel].ToString(), false, ecg);
-            //StreamWriter sw = new StreamWriter(filePath);
+            //StreamWriter sw = new StreamWriter(fplist[cursel].ToString(), false, ecg);
+
+            StreamWriter sw = new StreamWriter(filePath+".txt", false, ecg);
             sw.Write(str);
             sw.Close();
 
@@ -633,7 +833,7 @@ namespace WindowsFormsApplication7
                 buf = (ArrayList)cardmemo[cursel];
                 showcard(buf);
 
-                fplist.Add("");
+                //fplist.Add("");
             }
 
 
