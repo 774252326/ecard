@@ -176,6 +176,10 @@ namespace WindowsFormsApplication7
                         myStream.Close();
                     }
                 }
+                else
+                {
+                    return;
+                }
 
             }
 
@@ -185,6 +189,7 @@ namespace WindowsFormsApplication7
 
             File.WriteAllText(filePath, JsonConvert.SerializeObject(ppp));
             MessageBox.Show(filePath + savstr1[lang]);
+            updbtn();
         }
         //delete items
         private void button4_Click(object sender, EventArgs e)
@@ -612,6 +617,12 @@ namespace WindowsFormsApplication7
             }
         }
         #endregion
+
+        private void button18_Click(object sender, EventArgs e)
+        {
+            Form5 frm5 = new Form5();
+            frm5.ShowDialog();
+        }
 
 
     }
