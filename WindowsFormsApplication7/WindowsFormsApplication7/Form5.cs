@@ -15,7 +15,7 @@ using SLAB_HID_TO_UART;
 using Phychips.Rcp;
 using Phychips.Helper;
 
-
+using System.Threading;
 
 namespace WindowsFormsApplication7
 {
@@ -43,18 +43,54 @@ namespace WindowsFormsApplication7
 
 
 
-        public byte[] readcom = {0xBB, 0x00, 0x2C, 0x00, 0x05, 0x00, 0x00, 0x00, 0x01, 0x00, 0x7E};
-        public byte[] writecom = { 0xBB, 0x00, 0x2D, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x7E };
+        //public byte[] readcom = { 0xBB, 0x00, 0x2C, 0x00, 0x05, 0x00, 0x00, 0x00, 0x01, 0x00, 0x7E };
+        //public byte[] writecom = { 0xBB, 0x00, 0x2D, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x7E };
 
-        public String readc = "BB002C000500000001007E";
-        public String writec = "BB002D000C00000001020304050607087E";
+        //public String readc = "BB002C000500000001007E";
+        //public String writec = "BB002D000C00000001020304050607087E";
 
+        //public String jsonstr;
+        //public String namestr;
+
+        public byte begincode = 0xBB;
+        public byte cmdcode = 0x00;
+        public byte readcode = 0x84;
+        public byte writecode = 0x85;
+        public byte erasecode = 0x86;
+        public byte endcode = 0x7E;
+        public byte[] cardheader = { 0x55, 0xAA, 0x55, 0xAA };
+
+        //public ushort len = 0;
+        //public ushort addr = 0;
+        //public byte blockaddr = 0x00;
+
+        //public byte[] readbuf;
+
+        //public static byte readflag = 0;
+
+        private bool ReplyReady;
+        private String reply;
+
+        private ByteBuilder rebb;
+        //private ByteBuilder recbb;
+
+        Form1 f1;
+
+        //private Thread t;
+
+
+        #region origin wfa3 code
         public Form5()
         {
             InitializeComponent();
             //CP2110_DLL.HidUart_GetPinConfig();
 
             InitializeDialog();
+
+            //readbuf = new byte[READ_SIZE];
+            //button6.PerformClick();
+            rebb = new ByteBuilder();
+            //recbb = new ByteBuilder();
         }
 
 
@@ -79,7 +115,7 @@ namespace WindowsFormsApplication7
 
         void rename()
         {
-            
+
 
             groupBox1.Text = "Connection";
             button1.Text = "&Connect";
@@ -128,6 +164,8 @@ namespace WindowsFormsApplication7
             textBox9.Text = "BB 00 03 00 01 00 7E";
 
         }
+
+        #region re1
 
         //        // Register for device change notification for USB HID devices
         //// OnDeviceChange() will handle device arrival and removal
@@ -1150,6 +1188,7 @@ namespace WindowsFormsApplication7
             return cleanStr;
         }
 
+        #endregion
 
         // Transmit entered text using ASCII or hex format
         private void button4_Click(object sender, EventArgs e)
@@ -1292,17 +1331,6 @@ namespace WindowsFormsApplication7
 
 
 
-
-
-
-
-
-
-
-
-
-
-
         // Start the read timer which displays received UART
         // data in the receive window
         void StartReadTimer()
@@ -1321,11 +1349,11 @@ namespace WindowsFormsApplication7
         }
 
 
+
         // Periodically call read and append to receive window
         private void timer1_Tick(object sender, EventArgs e)
         {
-            ReceiveData();
-
+                            //ReceiveData();
         }
 
 
@@ -1339,7 +1367,7 @@ namespace WindowsFormsApplication7
 
             // Receive UART data from the device (up to 1000 bytes)
             status = CP2110_DLL.HidUart_Read(m_hidUart, buffer, numBytesToRead, ref numBytesRead);
-
+            //System.Array.Copy(buffer,readbuf,numBytesRead);
             // HidUart_Read returns HID_UART_SUCCESS if numBytesRead == numBytesToRead
             // and returns HID_UART_READ_TIMED_OUT if numBytesRead < numBytesToRead
             if (status == CP2110_DLL.HID_UART_SUCCESS || status == CP2110_DLL.HID_UART_READ_TIMED_OUT)
@@ -1357,19 +1385,44 @@ namespace WindowsFormsApplication7
                     {
                         str = System.Text.Encoding.ASCII.GetString(buffer);
                         //str = System.Text.Encoding.Default.GetString(buffer);
+                        textBox10.AppendText(str + "\n");
                     }
                     else
                     {
-                        ByteBuilder bb=new ByteBuilder(buffer);
-                        str = HexEncoding.ToString(bb.GetByteArray(0,(int)numBytesRead));
+                        ByteBuilder bb = new ByteBuilder(buffer);
+                  
+                        rebb.Append(bb.GetByteArray(0, (int)numBytesRead));
+                    if (checkcomplete(rebb) == 0)
+                    {
+                        //textBox10.Text = HexEncoding.ToString(rebb.GetByteArray());
+                        reply = HexEncoding.ToString(rebb.GetByteArray());
+                        rebb.Clear();
+                        ReplyReady = true;
+                    }
                     }
 
-                    textBox10.AppendText(str + "\n");
+                    //textBox10.AppendText(str + "\n");
+                    //textBox10.Text=str;
+                    //if (checkcomplete(rebb) == 0)
+                    //{
+
+                    //    //recbb.Append(rebb.GetByteArray(5, rebb.Length - 8));
+                    //    //textBox10.Text = HexEncoding.ToString(rebb.GetByteArray(5, rebb.Length - 8));
+                    //    textBox10.Text = HexEncoding.ToString(rebb.GetByteArray());
+
+                    //    //textBox10.AppendText(HexEncoding.ToString(rebb.GetByteArray(5, rebb.Length - 8)));
+
+                    //    //rebb.Clear();
+                    //    readflag = 1;
+                        
+                    //}
+
+
 
                 }
             }
 
-            //delete [] buffer;
+            //delete [] buffer;azzzzzz
         }
 
         // Clear the receive window
@@ -1379,7 +1432,7 @@ namespace WindowsFormsApplication7
         }
 
 
-
+        #region re2
 
         // Disconnect from the currently connected device
         // - Stop the read timer
@@ -1531,27 +1584,160 @@ namespace WindowsFormsApplication7
         {
             SetLatch();
         }
+        #endregion
+        #endregion
+
 
         private void button6_Click(object sender, EventArgs e)
         {
-            textBox9.Text = readc;
-            radioButton2.Checked = true;
-            button4_Click(sender, e);
+            //textBox9.Text = readc;
+            //radioButton2.Checked = true;
+            //button4_Click(sender, e);
+
+            f1 = new Form1(this);
+
+            f1.Show();
         }
 
         private void button7_Click(object sender, EventArgs e)
         {
-            textBox9.Text = writec;
-            radioButton2.Checked = true;
-            button4_Click(sender, e);
+            //textBox9.Text = writec;
+            //radioButton2.Checked = true;
+            //button4_Click(sender, e);
+        }
+
+        
+        public void setEraseCmd(byte blockaddr)
+        {
+            ByteBuilder bb = new ByteBuilder();
+            ushort len = 1;
+            bb.Append(begincode);
+            bb.Append(cmdcode);
+            bb.Append(erasecode);
+            bb.Append(len);
+            bb.Append(blockaddr);
+            bb.Append(endcode);
+
+            //ushort crccode = CRCCalculator.Cal_CRC16(bb.GetByteArray());
+
+            //bb.Append(crccode);
+
+            textBox9.Text = bb.ToString();
         }
 
 
+        public void setReadCmd(byte blockaddr, ushort addr, ushort readlength)
+        {
+            ByteBuilder bb = new ByteBuilder();
+            ushort len = 5;
+            bb.Append(begincode);
+            bb.Append(cmdcode);
+            bb.Append(readcode);
+            bb.Append(len);
+            bb.Append(blockaddr);
+            bb.Append(addr);
+            bb.Append(readlength);
+
+            bb.Append(endcode);
+
+            //ushort crccode = CRCCalculator.Cal_CRC16(bb.GetByteArray());
+
+            //bb.Append(crccode);
+
+            textBox9.Text = bb.ToString();
+        }
 
 
+        public void setWriteCmd(byte blockaddr, ushort addr, byte[] content)
+        {
+            ByteBuilder bb = new ByteBuilder();
+            ushort len = 3;
+            len += Convert.ToUInt16(content.Length);
 
+            bb.Append(begincode);
+            bb.Append(cmdcode);
+            bb.Append(writecode);
+            bb.Append(len);
+            bb.Append(blockaddr);
+            bb.Append(addr);
+            bb.Append(content);
 
+            bb.Append(endcode);
 
+            //ushort crccode = CRCCalculator.Cal_CRC16(bb.GetByteArray());
+
+            //bb.Append(crccode);
+
+            textBox9.Text = bb.ToString();
+        }
+
+        private void textBox10_TextChanged(object sender, EventArgs e)
+        {
+            //f1.textBox1.Text=textBox10.Text;
+            //int discarded;
+            // int newlen = (65536 - recbb.Length);
+            //if (newlen > 0)
+            //{
+
+            //    if (newlen > 247)
+            //    {
+            //        newlen = 247;
+            //    }
+
+            //    setReadCmd(1, Convert.ToUInt16(recbb.Length), Convert.ToUInt16(newlen));
+            //    button4.PerformClick();
+
+            //}
+            //else
+            //{
+            //    textBox10.Text = HexEncoding.ToString(recbb.GetByteArray());
+            //    f1.textBox1.Text = textBox10.Text;
+            //}
+        }
+
+        private byte checkcomplete(ByteBuilder bb)
+        {
+            if (bb.Length >= 8)
+            {
+                int length1 = Convert.ToInt32(bb.GetAt(3)) * 256 + Convert.ToInt32(bb.GetAt(4));
+                if (length1 + 8 == bb.Length)
+                {
+                    return 0;
+                }
+            }
+            return 1;
+        }
+
+        private void dof()
+        {
+            ReplyReady = false;
+            while (!ReplyReady)
+            {
+                //Thread.Sleep(Convert.ToInt32(READ_TIMER_ELAPSE));
+                Thread.Sleep(30);
+                ReceiveData();
+            }
+            //return textBox10.Text;
+        }
+
+        public String getReply()
+        {
+            Thread t = new Thread(new ThreadStart(dof));
+            t.Start();
+            ReplyReady = false;
+            while (!ReplyReady)
+            {
+                //Thread.Sleep(2 * Convert.ToInt32(READ_TIMER_ELAPSE));
+                Thread.Sleep(30);
+            }
+            return reply;
+        }
+
+        public void sendcmd()
+        {
+            radioButton2.Checked = true;
+            button4.PerformClick();
+        }
 
 
     }

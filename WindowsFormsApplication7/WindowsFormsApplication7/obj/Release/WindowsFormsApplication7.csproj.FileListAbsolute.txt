@@ -23,5 +23,17 @@ C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[
 C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\obj\Release\WindowsFormsApplication7.csprojResolveAssemblyReference.cache
 C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7\WindowsFormsApplication7\bin\Release\Newtonsoft.Json.dll
 C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7\WindowsFormsApplication7\bin\Release\Newtonsoft.Json.xml
-C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7\WindowsFormsApplication7\obj\Release\WindowsFormsApplication7.csprojResolveAssemblyReference.cache
 C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7\WindowsFormsApplication7\obj\Release\WindowsFormsApplication7.Form5.resources
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\bin\Release\WindowsFormsApplication7.exe.config
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\obj\Release\WindowsFormsApplication7.exe
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\obj\Release\WindowsFormsApplication7.pdb
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\bin\Release\WindowsFormsApplication7.exe
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\bin\Release\WindowsFormsApplication7.pdb
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\bin\Release\Newtonsoft.Json.dll
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\bin\Release\Newtonsoft.Json.xml
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\obj\Release\WindowsFormsApplication7.Form1.resources
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\obj\Release\WindowsFormsApplication7.Form3.resources
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\obj\Release\WindowsFormsApplication7.Form4.resources
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\obj\Release\WindowsFormsApplication7.Form5.resources
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\obj\Release\WindowsFormsApplication7.Properties.Resources.resources
+D:\d\WindowsFormsApplication7\WindowsFormsApplication7\obj\Release\WindowsFormsApplication7.csproj.GenerateResource.Cache
