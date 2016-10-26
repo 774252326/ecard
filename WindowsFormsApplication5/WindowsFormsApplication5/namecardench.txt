@@ -1,0 +1,40 @@
+	{
+		"Prefix":"Dr博士",
+
+		"Name":"Joe C.L. Chan陈政立",
+
+		"Suffix":"CISSP,CISA,MIEEE",
+
+		"Title":"Director of Technology科技部总监",
+
+		"CompanyName":"ipatrol",
+
+		"CompanyWebsite":"ipatroltech.com",
+
+		"Addr":
+		{
+			"Company1":"1/F Photonics center, hong kong science park, sha tin, hong kong香港沙田科学园光电子中心一楼",
+			"Company2":"2304-5, hong kong plaza south tower, 283 huaihai zhong road, shanghai上海市淮海中路283号香港广场南楼2304－5室"
+		},
+
+		"PhoneNumber":
+		{
+			"Company":"(852)91227710",
+			"Mobile1":"",
+			"Mobile2":"",
+			"Directline":"",
+			"Fax":""
+		},
+
+		"Email":
+		{
+			"Email1":"joe@ipatroltech.com",
+			"Email2":""
+		},
+
+		"IM":
+		{
+			"skype":"",
+			"MSN":""
+		}
+	}
