@@ -8,3 +8,16 @@ c:\users\r8anw2x\documents\visual studio 2012\Projects\WindowsFormsApplication7\
 c:\users\r8anw2x\documents\visual studio 2012\Projects\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.pdb
 c:\users\r8anw2x\documents\visual studio 2012\Projects\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.Form3.resources
 c:\users\r8anw2x\documents\visual studio 2012\Projects\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.Form4.resources
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\bin\Debug\WindowsFormsApplication7.exe.config
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.exe
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.pdb
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\bin\Debug\WindowsFormsApplication7.exe
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\bin\Debug\WindowsFormsApplication7.pdb
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\bin\Debug\Newtonsoft.Json.dll
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\bin\Debug\Newtonsoft.Json.xml
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.Form1.resources
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.Form3.resources
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.Form4.resources
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.Properties.Resources.resources
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.csproj.GenerateResource.Cache
+C:\Users\r8anw2x\Documents\Visual Studio 2012\Projects\WindowsFormsApplication7[3-20][delcard]\WindowsFormsApplication7\WindowsFormsApplication7\obj\Debug\WindowsFormsApplication7.csprojResolveAssemblyReference.cache
