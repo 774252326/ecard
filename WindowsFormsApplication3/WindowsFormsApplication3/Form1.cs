@@ -15,6 +15,7 @@ using SLAB_HID_TO_UART;
 using Phychips.Rcp;
 using Phychips.Helper;
 
+using System.Threading;
 
 
 namespace WindowsFormsApplication3
@@ -42,13 +43,26 @@ namespace WindowsFormsApplication3
         public uint READ_SIZE = 1000;
 
 
-
-        public byte[] readcom = {0xBB, 0x00, 0x2C, 0x00, 0x05, 0x00, 0x00, 0x00, 0x01, 0x00, 0x7E};
+        /// <summary>
+        /// //////////////////////////////////
+        /// </summary>
+        public byte[] readcom = { 0xBB, 0x00, 0x2C, 0x00, 0x05, 0x00, 0x00, 0x00, 0x01, 0x00, 0x7E };
         public byte[] writecom = { 0xBB, 0x00, 0x2D, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x7E };
 
-        public String readc = "BB002C000500000001007E";
-        public String writec = "BB002D000C00000001020304050607087E";
+        public String readc = "BB0084000500000000F77E";
+        //public String writec = "BB002D000C00000001020304050607087E";
 
+        private ByteBuilder rebb;
+
+        private bool flg;
+        private String reply;
+        //private Thread t;
+        /// <summary>
+        /// ////////////////////////////////////////////
+        /// </summary>
+        /// 
+
+        #region 1
         public Form1()
         {
             InitializeComponent();
@@ -74,12 +88,14 @@ namespace WindowsFormsApplication3
             //groupBox1.Text = "Connection";
 
             rename();
+
+            rebb = new ByteBuilder();
         }
 
 
         void rename()
         {
-            
+
 
             groupBox1.Text = "Connection";
             button1.Text = "&Connect";
@@ -126,7 +142,7 @@ namespace WindowsFormsApplication3
 
 
             textBox9.Text = "BB 00 03 00 01 00 7E";
-
+            //textBox9.Text = readc;
         }
 
         //        // Register for device change notification for USB HID devices
@@ -1324,7 +1340,7 @@ namespace WindowsFormsApplication3
         // Periodically call read and append to receive window
         private void timer1_Tick(object sender, EventArgs e)
         {
-            ReceiveData();
+            //ReceiveData();
 
         }
 
@@ -1351,20 +1367,32 @@ namespace WindowsFormsApplication3
 
                     //for(uint i=0;i<numBytesRead;i++)
                     //textBox10.AppendText(buffer[i].ToString()+" ");
-                    String str;
+                    
 
                     if (radioButton1.Checked)
                     {
+                        String str;
                         str = System.Text.Encoding.ASCII.GetString(buffer);
                         //str = System.Text.Encoding.Default.GetString(buffer);
+                        textBox10.AppendText(str + "\n");
                     }
                     else
                     {
-                        ByteBuilder bb=new ByteBuilder(buffer);
-                        str = HexEncoding.ToString(bb.GetByteArray(0,(int)numBytesRead));
+                        ByteBuilder bb = new ByteBuilder(buffer);
+                        //str = HexEncoding.ToString(bb.GetByteArray(0,(int)numBytesRead));
+
+                        rebb.Append(bb.GetByteArray(0, (int)numBytesRead));
+                        if (checkcomplete(rebb) == 0)
+                        {
+                            //textBox10.Text = HexEncoding.ToString(rebb.GetByteArray());
+                            reply = HexEncoding.ToString(rebb.GetByteArray());
+                            rebb.Clear();
+                            flg = true;
+                        }
+
                     }
 
-                    textBox10.AppendText(str + "\n");
+
 
                 }
             }
@@ -1532,20 +1560,62 @@ namespace WindowsFormsApplication3
             SetLatch();
         }
 
+
+        #endregion
+
         private void button6_Click(object sender, EventArgs e)
         {
             textBox9.Text = readc;
             radioButton2.Checked = true;
-            button4_Click(sender, e);
+            button4.PerformClick();
         }
 
         private void button7_Click(object sender, EventArgs e)
         {
-            textBox9.Text = writec;
+            textBox9.Text = readc;
             radioButton2.Checked = true;
-            button4_Click(sender, e);
+            button4.PerformClick();
+
+            textBox10.Text = getreply();
+            MessageBox.Show(textBox10.Text);
         }
 
+        public void dof()
+        {
+            flg = false;
+            while (!flg)
+            {
+                Thread.Sleep(Convert.ToInt32(READ_TIMER_ELAPSE));
+                ReceiveData();
+            }
+            //return textBox10.Text;
+        }
+
+        public String getreply()
+        {
+            Thread t = new Thread(new ThreadStart(dof));
+            t.Start();
+            while (!flg)
+            {
+                Thread.Sleep(2 * Convert.ToInt32(READ_TIMER_ELAPSE));
+            }
+            return reply;
+        }
+
+
+        private byte checkcomplete(ByteBuilder bb)
+        {
+            if (bb.Length >= 8)
+            {
+                int length1 = Convert.ToInt32(bb.GetAt(3)) * 256 + Convert.ToInt32(bb.GetAt(4));
+                if (length1 + 8 == bb.Length)
+                {
+                    return 0;
+                }
+            }
+            return 1;
+
+        }
 
 
 
@@ -1555,4 +1625,10 @@ namespace WindowsFormsApplication3
 
 
     }
+
+
+
+
+
+
 }
