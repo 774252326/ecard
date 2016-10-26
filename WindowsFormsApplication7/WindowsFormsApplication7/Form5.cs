@@ -57,8 +57,16 @@ namespace WindowsFormsApplication7
         public byte readcode = 0x84;
         public byte writecode = 0x85;
         public byte erasecode = 0x86;
+        public byte querycode = 0x87;
+        public byte spacecode = 0x88;
         public byte endcode = 0x7E;
         public byte[] cardheader = { 0x55, 0xAA, 0x55, 0xAA };
+        public ushort MaxReadLength = 244;
+        public ushort MaxWriteLength = 240;
+        public byte BlockNumber = 128;
+        public ushort MaxNameLength = 244;
+        public ushort MaxJsonLength = 256 * 255;
+
 
         //public ushort len = 0;
         //public ushort addr = 0;
@@ -1353,7 +1361,7 @@ namespace WindowsFormsApplication7
         // Periodically call read and append to receive window
         private void timer1_Tick(object sender, EventArgs e)
         {
-                            //ReceiveData();
+            //ReceiveData();
         }
 
 
@@ -1390,15 +1398,15 @@ namespace WindowsFormsApplication7
                     else
                     {
                         ByteBuilder bb = new ByteBuilder(buffer);
-                  
+
                         rebb.Append(bb.GetByteArray(0, (int)numBytesRead));
-                    if (checkcomplete(rebb) == 0)
-                    {
-                        //textBox10.Text = HexEncoding.ToString(rebb.GetByteArray());
-                        reply = HexEncoding.ToString(rebb.GetByteArray());
-                        rebb.Clear();
-                        ReplyReady = true;
-                    }
+                        if (checkcomplete(rebb) == 0)
+                        {
+                            //textBox10.Text = HexEncoding.ToString(rebb.GetByteArray());
+                            reply = HexEncoding.ToString(rebb.GetByteArray());
+                            rebb.Clear();
+                            ReplyReady = true;
+                        }
                     }
 
                     //textBox10.AppendText(str + "\n");
@@ -1414,7 +1422,7 @@ namespace WindowsFormsApplication7
 
                     //    //rebb.Clear();
                     //    readflag = 1;
-                        
+
                     //}
 
 
@@ -1606,7 +1614,7 @@ namespace WindowsFormsApplication7
             //button4_Click(sender, e);
         }
 
-        
+
         public void setEraseCmd(byte blockaddr)
         {
             ByteBuilder bb = new ByteBuilder();
@@ -1624,8 +1632,42 @@ namespace WindowsFormsApplication7
 
             textBox9.Text = bb.ToString();
         }
+        public void setEraseCmd2(byte blockaddr)
+        {
+
+            int opened = 0;
+
+            // Check if the device is opened
+            if (CP2110_DLL.HidUart_IsOpened(m_hidUart, ref opened) == CP2110_DLL.HID_UART_SUCCESS && opened != 0)
+            {
+                ByteBuilder bb = new ByteBuilder();
+                ushort len = 1;
+                bb.Append(begincode);
+                bb.Append(cmdcode);
+                bb.Append(erasecode);
+                bb.Append(len);
+                bb.Append(blockaddr);
+                bb.Append(endcode);
+
+                ushort crccode = CRCCalculator.Cal_CRC16(bb.GetByteArray());
+
+                bb.Append(crccode);
 
 
+                uint numBytesWritten = 0;
+                uint numBytesToWrite = Convert.ToUInt32(bb.Length);
+
+                int status;
+                byte[] buffer = bb.GetByteArray();
+
+                // Send the UART data to the device to transmit
+                status = CP2110_DLL.HidUart_Write(m_hidUart, buffer, numBytesToWrite, ref numBytesWritten);
+
+                notice(status);
+            }
+
+        }
+        
         public void setReadCmd(byte blockaddr, ushort addr, ushort readlength)
         {
             ByteBuilder bb = new ByteBuilder();
@@ -1646,7 +1688,41 @@ namespace WindowsFormsApplication7
 
             textBox9.Text = bb.ToString();
         }
+        public void setReadCmd2(byte blockaddr, ushort addr, ushort readlength)
+        {
+            int opened = 0;
 
+            // Check if the device is opened
+            if (CP2110_DLL.HidUart_IsOpened(m_hidUart, ref opened) == CP2110_DLL.HID_UART_SUCCESS && opened != 0)
+            {
+                ByteBuilder bb = new ByteBuilder();
+                ushort len = 5;
+                bb.Append(begincode);
+                bb.Append(cmdcode);
+                bb.Append(readcode);
+                bb.Append(len);
+                bb.Append(blockaddr);
+                bb.Append(addr);
+                bb.Append(readlength);
+
+                bb.Append(endcode);
+
+                ushort crccode = CRCCalculator.Cal_CRC16(bb.GetByteArray());
+
+                bb.Append(crccode);
+
+                uint numBytesWritten = 0;
+                uint numBytesToWrite = Convert.ToUInt32(bb.Length);
+
+                int status;
+                byte[] buffer = bb.GetByteArray();
+
+                // Send the UART data to the device to transmit
+                status = CP2110_DLL.HidUart_Write(m_hidUart, buffer, numBytesToWrite, ref numBytesWritten);
+
+                notice(status);
+            }
+        }
 
         public void setWriteCmd(byte blockaddr, ushort addr, byte[] content)
         {
@@ -1669,6 +1745,145 @@ namespace WindowsFormsApplication7
             //bb.Append(crccode);
 
             textBox9.Text = bb.ToString();
+        }
+        public void setWriteCmd2(byte blockaddr, ushort addr, byte[] content)
+        {
+            int opened = 0;
+
+            // Check if the device is opened
+            if (CP2110_DLL.HidUart_IsOpened(m_hidUart, ref opened) == CP2110_DLL.HID_UART_SUCCESS && opened != 0)
+            {
+                ByteBuilder bb = new ByteBuilder();
+                ushort len = 3;
+                len += Convert.ToUInt16(content.Length);
+
+                bb.Append(begincode);
+                bb.Append(cmdcode);
+                bb.Append(writecode);
+                bb.Append(len);
+                bb.Append(blockaddr);
+                bb.Append(addr);
+                bb.Append(content);
+
+                bb.Append(endcode);
+
+                ushort crccode = CRCCalculator.Cal_CRC16(bb.GetByteArray());
+
+                bb.Append(crccode);
+
+                uint numBytesWritten = 0;
+                uint numBytesToWrite = Convert.ToUInt32(bb.Length);
+
+                int status;
+                byte[] buffer = bb.GetByteArray();
+
+                // Send the UART data to the device to transmit
+                status = CP2110_DLL.HidUart_Write(m_hidUart, buffer, numBytesToWrite, ref numBytesWritten);
+
+                notice(status);
+            }
+        }
+
+        public void setQueryCmd(byte[] content)
+        {
+            ByteBuilder bb = new ByteBuilder();
+            ushort len = Convert.ToUInt16(content.Length);
+
+            bb.Append(begincode);
+            bb.Append(cmdcode);
+            bb.Append(querycode);
+            bb.Append(len);
+            bb.Append(content);
+            bb.Append(endcode);
+
+            //ushort crccode = CRCCalculator.Cal_CRC16(bb.GetByteArray());
+
+            //bb.Append(crccode);
+
+            textBox9.Text = bb.ToString();
+        }
+        public void setQueryCmd2(byte[] content)
+        {
+            int opened = 0;
+
+            // Check if the device is opened
+            if (CP2110_DLL.HidUart_IsOpened(m_hidUart, ref opened) == CP2110_DLL.HID_UART_SUCCESS && opened != 0)
+            {
+                ByteBuilder bb = new ByteBuilder();
+                ushort len = Convert.ToUInt16(content.Length);
+
+                bb.Append(begincode);
+                bb.Append(cmdcode);
+                bb.Append(querycode);
+                bb.Append(len);
+                bb.Append(content);
+                bb.Append(endcode);
+
+                ushort crccode = CRCCalculator.Cal_CRC16(bb.GetByteArray());
+
+                bb.Append(crccode);
+
+                uint numBytesWritten = 0;
+                uint numBytesToWrite = Convert.ToUInt32(bb.Length);
+
+                int status;
+                byte[] buffer = bb.GetByteArray();
+
+                // Send the UART data to the device to transmit
+                status = CP2110_DLL.HidUart_Write(m_hidUart, buffer, numBytesToWrite, ref numBytesWritten);
+
+                notice(status);
+            }
+        }
+
+        public void setSpaceCmd()
+        {
+            ByteBuilder bb = new ByteBuilder();
+            ushort len = 0;
+
+            bb.Append(begincode);
+            bb.Append(cmdcode);
+            bb.Append(spacecode);
+            bb.Append(len);
+            bb.Append(endcode);
+
+            //ushort crccode = CRCCalculator.Cal_CRC16(bb.GetByteArray());
+
+            //bb.Append(crccode);
+
+            textBox9.Text = bb.ToString();
+        }
+        public void setSpaceCmd2()
+        {
+            int opened = 0;
+
+            // Check if the device is opened
+            if (CP2110_DLL.HidUart_IsOpened(m_hidUart, ref opened) == CP2110_DLL.HID_UART_SUCCESS && opened != 0)
+            {
+                ByteBuilder bb = new ByteBuilder();
+                ushort len = 0;
+
+                bb.Append(begincode);
+                bb.Append(cmdcode);
+                bb.Append(spacecode);
+                bb.Append(len);
+                bb.Append(endcode);
+
+                ushort crccode = CRCCalculator.Cal_CRC16(bb.GetByteArray());
+
+                bb.Append(crccode);
+
+                uint numBytesWritten = 0;
+                uint numBytesToWrite = Convert.ToUInt32(bb.Length);
+
+                int status;
+                byte[] buffer = bb.GetByteArray();
+
+                // Send the UART data to the device to transmit
+                status = CP2110_DLL.HidUart_Write(m_hidUart, buffer, numBytesToWrite, ref numBytesWritten);
+
+                notice(status);
+            }
         }
 
         private void textBox10_TextChanged(object sender, EventArgs e)
@@ -1737,6 +1952,17 @@ namespace WindowsFormsApplication7
         {
             radioButton2.Checked = true;
             button4.PerformClick();
+        }
+
+        private void notice(int status)
+        {
+            // Notify the user that an error occurred
+            if (status != CP2110_DLL.HID_UART_SUCCESS)
+            {
+                String msg;
+                msg = "Failed to transmit : " + GetHidUartStatusStr(status);
+                MessageBox.Show(msg);
+            }
         }
 
 

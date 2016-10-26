@@ -51,45 +51,31 @@ namespace WindowsFormsApplication7
         string[] errstr1 = new[] { "the selected item cannot be removed", "此项不可删除" };
         string[] errstr2 = new[] { "no item selected", "未选中项" };
         string[] savstr1 = new[] { " saved", " 已保存" };
-
+        //string[] qtitle = new[] { "name to query:", "输入要查找的姓名：" };
+        string[] qtitle = new[] { "who:", "找谁：" };
         public static String recstr;
-        //byte a;
-        //ushort b;
-        //int le;
 
         private int discard;
 
-        public static byte flag;
+        ArrayList flashmap;
 
         public Form5 f5;
 
         public Form1(Form5 nf)
         {
             InitializeComponent();
-            ColumnHeader colHead;
-
-            colHead = new ColumnHeader();
-            listView1.Columns.Add(colHead);
-            colHead = new ColumnHeader();
-            listView1.Columns.Add(colHead);
-
-            setwin(lang);
-            updbtn();
-
-            clabel = new ArrayList();
-            setCardLabel(ref clabel);
-
-            cardmemo = new ArrayList();
-            //fplist = new ArrayList();
-            imglist = new ArrayList();
-
+            InitialEnvironment();
             f5 = nf;
-            flag = 0;
         }
 
         public Form1()
         {
             InitializeComponent();
+            InitialEnvironment();            
+        }
+
+        private void InitialEnvironment()
+        {
             ColumnHeader colHead;
 
             colHead = new ColumnHeader();
@@ -106,8 +92,8 @@ namespace WindowsFormsApplication7
             cardmemo = new ArrayList();
             //fplist = new ArrayList();
             imglist = new ArrayList();
+            flashmap = new ArrayList();
         }
-
 
         //set button and list label
         private void setwin(int cc)
@@ -129,6 +115,7 @@ namespace WindowsFormsApplication7
                     button10.Text = "import";
                     button11.Text = "import from card";
                     button12.Text = "clear card";
+                    button14.Text = "find";
                     button18.Text = "export to card";
                     break;
                 case 1:
@@ -146,6 +133,7 @@ namespace WindowsFormsApplication7
                     button10.Text = "导入";
                     button11.Text = "从卡导入";
                     button12.Text = "清除数据";
+                    button14.Text = "查找";
                     button18.Text = "导出到卡";
                     break;
                 default:
@@ -744,47 +732,19 @@ namespace WindowsFormsApplication7
         private void button18_Click(object sender, EventArgs e)
         {
 
-            Win32.HiPerfTimer pt = new Win32.HiPerfTimer(); 
+            Win32.HiPerfTimer pt = new Win32.HiPerfTimer();
             pt.Start();
 
             for (int i = 0; i < cardmemo.Count; i++)
             {
-
                 ArrayList buf = (ArrayList)cardmemo[i];
                 Card c = new Card();
                 c.Al2Card(buf);
                 c.Img2Logo((Image)imglist[i]);
-                String jstr = JsonConvert.SerializeObject(c);
-
-                byte[] jbyte = Encoding.Default.GetBytes(jstr);
-                byte[] nbyte = Encoding.Default.GetBytes(c.Name[lang]);
-
-                if (nbyte.Length > 249)
-                {
-                    MessageBox.Show("name too long");
-                    continue;
-                }
-                if (jbyte.Length > 256 * 255)
-                {
-                    MessageBox.Show("card file too big");
-                    continue;
-                }
-
-                byte nlen = Convert.ToByte(nbyte.Length);
-                ushort jlen = Convert.ToUInt16(jbyte.Length);
-
-                byte baddr = Convert.ToByte(i);
-                erasesth(baddr);
-                ByteBuilder bb = new ByteBuilder(f5.cardheader);
-                bb.Append(nlen);
-                bb.Append(jlen);
-                bb.Append(nbyte);
-
-                writesth256(baddr, 0, bb.GetByteArray());
-                writesth(baddr, 1, jbyte);
+                writeCardToBlock(c, Convert.ToByte(i));
             }
 
-            pt.Stop(); 
+            pt.Stop();
 
             MessageBox.Show("all card file saved to card\nelapsed time = " + pt.Duration.ToString() + " s");
 
@@ -792,79 +752,14 @@ namespace WindowsFormsApplication7
         }
 
 
-
-
-
-
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-            //recstr += textBox1.Text;
-            //int discarded;
-            //byte[] bbuf = HexEncoding.GetBytes(recstr, out discarded);
-            //ushort newlen = Convert.ToUInt16(65536 - bbuf.Length);
-            //if (newlen > 0)
-            //{
-            //    if (newlen > 247)
-            //    {
-            //        newlen = 247;
-            //    }
-
-            //    f5.setReadCmd(a, Convert.ToUInt16(bbuf.Length), newlen);
-            //    f5.button4.PerformClick();
-
-            //}
-            //else
-            //{
-            //    button18.Enabled = true;
-            //}
-
-        }
-
         private void button11_Click(object sender, EventArgs e)
         {
-            //int ba = 0;
-
             Win32.HiPerfTimer pt = new Win32.HiPerfTimer();     // 创建新的 HiPerfTimer 对象
             pt.Start();                             // 启动计时器
 
-            //cardmemo.Clear();
-            //imglist.Clear();
-
-            //ArrayList blcokadlist = new ArrayList();
-            //ArrayList adlist = new ArrayList();
-
-            ArrayList cardbuf;
-            Image logobuf = null;
-            for (byte ba = 0; ba < 128; ba++)
+            for (byte ba = 0; ba < f5.BlockNumber; ba++)
             {
-                f5.setReadCmd(ba, 0, 7);
-                f5.sendcmd();
-                recstr = f5.getReply();
-
-                byte[] rpb = decodeReadReply(recstr);
-                if (rpb[0] == f5.cardheader[0] && rpb[1] == f5.cardheader[1] && rpb[2] == f5.cardheader[2] && rpb[3] == f5.cardheader[3])
-                {
-                    byte namelen = rpb[4];
-                    ushort jsonlen = rpb[5];
-                    jsonlen *= 256;
-                    jsonlen += rpb[6];
-
-                    byte[] namebyte = readsth(ba, 7, Convert.ToUInt16(namelen));
-                    byte[] jsonbyte = readsth(ba, 256, jsonlen);
-
-                    String strr = Encoding.Default.GetString(jsonbyte);
-                    Card c1 = JsonConvert.DeserializeObject<Card>(strr);
-
-                    cardbuf = new ArrayList();
-                    logobuf = null;
-                    c1.Card2Al(ref cardbuf);
-                    c1.Logo2Img(ref logobuf);
-                    cardmemo.Add(cardbuf);
-                    imglist.Add(logobuf);
-
-                }
-
+                readblock(ba);
             }
 
             updbox();
@@ -886,14 +781,15 @@ namespace WindowsFormsApplication7
 
         private byte[] readsth(byte blockaddr, ushort addr, ushort len)
         {
-            ushort lenlimit = 244;
+            ushort lenlimit = f5.MaxReadLength;
             ushort naddr = addr;
             ByteBuilder bb = new ByteBuilder();
             String tmp;
             while (len > lenlimit)
             {
-                f5.setReadCmd(blockaddr, addr, lenlimit);
-                f5.sendcmd();
+                f5.setReadCmd2(blockaddr, addr, lenlimit);
+                //f5.setReadCmd(blockaddr, addr, lenlimit);
+                //f5.sendcmd();
                 tmp = f5.getReply();
                 bb.Append(decodeReadReply(tmp));
 
@@ -906,21 +802,55 @@ namespace WindowsFormsApplication7
                 len -= lenlimit;
             }
 
-            f5.setReadCmd(blockaddr, addr, len);
-            f5.sendcmd();
+            f5.setReadCmd2(blockaddr, addr, len);
+            //f5.setReadCmd(blockaddr, addr, len);
+            //f5.sendcmd();
             tmp = f5.getReply();
             bb.Append(decodeReadReply(tmp));
 
             return bb.GetByteArray();
         }
 
+        private bool readblock(byte ba)
+        {
+            ArrayList cardbuf;
+            Image logobuf = null;
+
+            byte[] rpb = readsth(ba, 0, 7);
+
+            if (rpb[0] == f5.cardheader[0] && rpb[1] == f5.cardheader[1] && rpb[2] == f5.cardheader[2] && rpb[3] == f5.cardheader[3])
+            {
+                byte namelen = rpb[4];
+                ushort jsonlen = rpb[5];
+                jsonlen *= 256;
+                jsonlen += rpb[6];
+
+                byte[] namebyte = readsth(ba, 7, Convert.ToUInt16(namelen));
+                byte[] jsonbyte = readsth(ba, 256, jsonlen);
+
+                String strr = Encoding.Default.GetString(jsonbyte);
+                Card c1 = JsonConvert.DeserializeObject<Card>(strr);
+
+                cardbuf = new ArrayList();
+                logobuf = null;
+                c1.Card2Al(ref cardbuf);
+                c1.Logo2Img(ref logobuf);
+                cardmemo.Add(cardbuf);
+                imglist.Add(logobuf);
+                return true;
+            }
+            return false;
+
+        }
+
         private void erasesth(byte blockaddr)
         {
             //do
             //{
-                f5.setEraseCmd(blockaddr);
-                f5.sendcmd();
-                recstr = f5.getReply();
+            f5.setEraseCmd2(blockaddr);
+            //f5.setEraseCmd(blockaddr);
+            //f5.sendcmd();
+            recstr = f5.getReply();
             //} while (recstr != "BB01860001007E");
         }
 
@@ -929,31 +859,28 @@ namespace WindowsFormsApplication7
             ushort addr = Convert.ToUInt16(addr256);
             addr *= 256;
 
-            int lenlimit = 240;
+            int lenlimit = f5.MaxWriteLength;
             if (content.Length <= lenlimit)
             {
-                f5.setWriteCmd(blockaddr, addr, content);
-                f5.sendcmd();
+                f5.setWriteCmd2(blockaddr, addr, content);
+                //f5.setWriteCmd(blockaddr, addr, content);
+                //f5.sendcmd();
                 recstr = f5.getReply();
             }
             else
             {
                 ByteBuilder bb = new ByteBuilder(content);
-                f5.setWriteCmd(blockaddr, addr, bb.GetByteArray(0, lenlimit));
-                f5.sendcmd();
+                f5.setWriteCmd2(blockaddr, addr, bb.GetByteArray(0, lenlimit));
+                //f5.setWriteCmd(blockaddr, addr, bb.GetByteArray(0, lenlimit));
+                //f5.sendcmd();
                 recstr = f5.getReply();
 
                 addr += Convert.ToUInt16(lenlimit);
 
-                int len2 = bb.Length - lenlimit;
-                if (len2 > 16)
-                {
-                    len2 = 16;
-                }
-
-
-                f5.setWriteCmd(blockaddr, addr, bb.GetByteArray(240, len2));
-                f5.sendcmd();
+                int len2 = ( bb.Length > 256 )?(256  - lenlimit):(bb.Length - lenlimit);
+                f5.setWriteCmd2(blockaddr, addr, bb.GetByteArray(lenlimit, len2));
+                //f5.setWriteCmd(blockaddr, addr, bb.GetByteArray(lenlimit, len2));
+                //f5.sendcmd();
                 recstr = f5.getReply();
 
             }
@@ -971,34 +898,63 @@ namespace WindowsFormsApplication7
                 ByteBuilder bb = new ByteBuilder(content);
                 byte nba, na256;
                 int i;
-                for (i = 0; i < bb.Length-256; i+=256)
+                for (i = 0; i < bb.Length - 256; i += 256)
                 {
-                    //na256 = Convert.ToByte(addr256+Convert.ToByte(i));
-                    
-                    //if
-                    //nba =Convert.ToByte( blockaddr+Convert.ToByte(i / 256.0));
                     writesth256(blockaddr, addr256, bb.GetByteArray(i, 256));
-                    na256=addr256;
+                    na256 = addr256;
                     addr256 += 1;
-                    if(addr256<na256)
+                    if (addr256 < na256)
                     {
-                        blockaddr+=1;
+                        blockaddr += 1;
                     }
                 }
 
-                //na256 = Convert.ToByte(addr256 + Convert.ToByte(i));
-                //nba = Convert.ToByte(blockaddr + Convert.ToByte(i / 256.0));
-                writesth256(blockaddr, addr256, bb.GetByteArray(i, bb.Length - i ));
+                writesth256(blockaddr, addr256, bb.GetByteArray(i, bb.Length - i));
 
             }
 
         }
 
+
+        private bool writeCardToBlock(Card c, byte blockaddr)
+        {
+            String jstr = JsonConvert.SerializeObject(c);
+
+            byte[] jbyte = Encoding.Default.GetBytes(jstr);
+            byte[] nbyte = Encoding.Default.GetBytes(c.Name[lang]);
+
+            if (nbyte.Length > f5.MaxNameLength)
+            {
+                MessageBox.Show("name too long");
+                return false;
+            }
+            if (jbyte.Length > f5.MaxJsonLength)
+            {
+                MessageBox.Show("card file too big");
+                return false;
+            }
+
+            byte nlen = Convert.ToByte(nbyte.Length);
+            ushort jlen = Convert.ToUInt16(jbyte.Length);
+
+            
+            erasesth(blockaddr);
+            ByteBuilder bb = new ByteBuilder(f5.cardheader);
+            bb.Append(nlen);
+            bb.Append(jlen);
+            bb.Append(nbyte);
+
+            writesth256(blockaddr, 0, bb.GetByteArray());
+            writesth(blockaddr, 1, jbyte);
+            return true;
+        }
+
+
         private void button12_Click(object sender, EventArgs e)
         {
             Win32.HiPerfTimer pt = new Win32.HiPerfTimer();
             pt.Start();
-            for (byte i = 0; i < 128; i++)
+            for (byte i = 0; i < f5.BlockNumber; i++)
             {
                 erasesth(i);
             }
@@ -1011,15 +967,20 @@ namespace WindowsFormsApplication7
         {
             Win32.HiPerfTimer pt = new Win32.HiPerfTimer();
             pt.Start();
-            int i=0;
+            //int i = 0;
             //for (int i = 0; i < cardmemo.Count; i++)
+            for (int i = 0; i < 128; i++)
             {
-         
 
-                ArrayList buf = (ArrayList)cardmemo[i];
+
+                ArrayList buf = (ArrayList)cardmemo[0];
                 Card c = new Card();
                 c.Al2Card(buf);
-                c.Img2Logo((Image)imglist[i]);
+                c.Img2Logo((Image)imglist[0]);
+
+                c.Name[0] += i.ToString();
+                c.Name[1] += i.ToString();
+
                 String jstr = JsonConvert.SerializeObject(c);
 
                 byte[] jbyte = Encoding.Default.GetBytes(jstr);
@@ -1033,14 +994,14 @@ namespace WindowsFormsApplication7
                 if (nbyte.Length > 249)
                 {
                     MessageBox.Show("name too long");
-                    //continue;
-                    return;
+                    continue;
+                    //return;
                 }
                 if (jbyte.Length > 256 * 255)
                 {
                     MessageBox.Show("card file too big");
-                    //continue;
-                    return;
+                    continue;
+                    //return;
                 }
 
                 byte nlen = Convert.ToByte(nbyte.Length);
@@ -1056,7 +1017,7 @@ namespace WindowsFormsApplication7
                 writesth256(baddr, 0, bb.GetByteArray());
                 byte[] b1 = readsth(baddr, 0, Convert.ToUInt16(bb.Length));
 
-                if( !cpb(b1,bb.GetByteArray()) )
+                if (!cpb(b1, bb.GetByteArray()))
                 {
                     MessageBox.Show("0");
                 }
@@ -1069,7 +1030,7 @@ namespace WindowsFormsApplication7
                         lle = 256;
                     writesth256(baddr, Convert.ToByte(j / 256 + 1), bbb.GetByteArray(j, lle));
                     byte[] b2 = readsth(baddr, Convert.ToUInt16(j + 256), Convert.ToUInt16(lle));
-                    if ( !cpb(b2, bbb.GetByteArray(j, lle)) )
+                    if (!cpb(b2, bbb.GetByteArray(j, lle)))
                     {
                         MessageBox.Show(j.ToString());
                     }
@@ -1103,7 +1064,73 @@ namespace WindowsFormsApplication7
 
         }
 
+        private void button14_Click(object sender, EventArgs e)
+        {
+            Form3 frm3 = new Form3();
+            frm3.setwin(lang);
+            frm3.setcombo(qtitle[lang]);
+            frm3.settext("");
+            frm3.ShowDialog();
+            if (frm3.Value != null)
+            {
+                byte[] nbyte = Encoding.Default.GetBytes(frm3.Value);
+                byte baddr = queryblock(nbyte);
+                if (baddr < f5.BlockNumber)
+                {
+                    MessageBox.Show("block addresss is " + baddr.ToString());
+                    readblock(baddr);
+                    updbox();
+                    listBox1.SelectedIndex = cardmemo.Count - 1;
+                }
+                else
+                {
+                    MessageBox.Show("404");
+                }
+            }
 
+        }
+
+        private byte queryblock(byte[] content)
+        {
+            if (content.Length > 0 && content.Length < f5.MaxNameLength)
+            {
+                f5.setQueryCmd2(content);
+                //f5.setQueryCmd(content);
+                //f5.sendcmd();
+                String tmp = f5.getReply();
+                byte[] rpb = HexEncoding.GetBytes(tmp, out discard);
+                if (rpb[2] == f5.querycode && rpb[4] == 1)
+                {
+                    return rpb[5];
+                }
+            }
+            return 0xFF;
+        }
+
+
+        private void queryspace()
+        {
+            f5.setSpaceCmd2();
+            String tmp = f5.getReply();
+            byte[] bt = decodeReadReply(tmp);
+            ArrayList tmpmap = new ArrayList();
+            for (int i = 0; i < bt.Length; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    byte onebit = Convert.ToByte(2^j);
+                    onebit &= bt[i];
+                    if (onebit != 0)
+                    {
+                        tmpmap.Add(j + i * 8);
+                    }
+
+                }
+            }
+
+            flashmap=tmpmap;
+
+        }
 
 
     }
