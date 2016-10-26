@@ -59,6 +59,8 @@ namespace WindowsFormsApplication7
         public byte erasecode = 0x86;
         public byte querycode = 0x87;
         public byte spacecode = 0x88;
+        public byte firstemptycode = 0x89;
+
         public byte endcode = 0x7E;
         public byte[] cardheader = { 0x55, 0xAA, 0x55, 0xAA };
         public ushort MaxReadLength = 244;
@@ -168,6 +170,9 @@ namespace WindowsFormsApplication7
             radioButton2.Text = "HEX";
 
 
+            button6.Text = "Open";
+            button7.Text = "";
+            button6.Enabled = false;
 
             textBox9.Text = "BB 00 03 00 01 00 7E";
 
@@ -1153,7 +1158,7 @@ namespace WindowsFormsApplication7
                 Disconnect();
             }
 
-
+            button6.Enabled = !(button1.Text == "&Connect");
 
 
         }
@@ -1866,6 +1871,39 @@ namespace WindowsFormsApplication7
                 bb.Append(begincode);
                 bb.Append(cmdcode);
                 bb.Append(spacecode);
+                bb.Append(len);
+                bb.Append(endcode);
+
+                ushort crccode = CRCCalculator.Cal_CRC16(bb.GetByteArray());
+
+                bb.Append(crccode);
+
+                uint numBytesWritten = 0;
+                uint numBytesToWrite = Convert.ToUInt32(bb.Length);
+
+                int status;
+                byte[] buffer = bb.GetByteArray();
+
+                // Send the UART data to the device to transmit
+                status = CP2110_DLL.HidUart_Write(m_hidUart, buffer, numBytesToWrite, ref numBytesWritten);
+
+                notice(status);
+            }
+        }
+
+        public void setFirstEmptyCmd2()
+        {
+            int opened = 0;
+
+            // Check if the device is opened
+            if (CP2110_DLL.HidUart_IsOpened(m_hidUart, ref opened) == CP2110_DLL.HID_UART_SUCCESS && opened != 0)
+            {
+                ByteBuilder bb = new ByteBuilder();
+                ushort len = 0;
+
+                bb.Append(begincode);
+                bb.Append(cmdcode);
+                bb.Append(firstemptycode);
                 bb.Append(len);
                 bb.Append(endcode);
 
