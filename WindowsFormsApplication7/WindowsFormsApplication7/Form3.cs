@@ -64,10 +64,12 @@ namespace WindowsFormsApplication7
                 case 0:
                     button1.Text = "OK";
                     button2.Text = "Cancel";
+                    textBox1.ImeMode = ImeMode.Off;
                     break;
                 case 1:
                     button1.Text = "确定";
                     button2.Text = "取消";
+                    textBox1.ImeMode = ImeMode.On;
                     break;
                 default:
                     break;

@@ -91,15 +91,15 @@ namespace WindowsFormsApplication7
         //Card cardLabel;
         //public Encoding ecg = Encoding.GetEncoding("gb2312");
         public Encoding ecg = Encoding.UTF8;
-        ArrayList buf;
+        //ArrayList buf;
 
         ArrayList clabel;
         ArrayList cardmemo;
 
         //ArrayList fplist;
 
-        
-        private int cursel=0;
+
+        private int cursel = 0;
 
         public Form1()
         {
@@ -338,7 +338,7 @@ namespace WindowsFormsApplication7
             foreach (Card k in cb.C)
             {
                 ArrayList cardal = new ArrayList();
-                Card2Al( k, ref cardal);
+                Card2Al(k, ref cardal);
                 al.Add(cardal);
             }
 
@@ -392,7 +392,7 @@ namespace WindowsFormsApplication7
             Card ca;
             //ArrayList cardal;
             //ArrayList q=new ArrayList();
-            List<Card> w=new List<Card>();
+            List<Card> w = new List<Card>();
             //w.Add(ca);
             //CardBook cb=new CardBook();
 
@@ -401,10 +401,10 @@ namespace WindowsFormsApplication7
             //for (i = 0; i < nc; i++)
             {
                 //cardal = (ArrayList)al[i];
-                ca=new Card();
+                ca = new Card();
                 Al2Card(ref ca, cardal);
-                w.Add(ca);         
-                
+                w.Add(ca);
+
             }
 
             cb.C = (Card[])(w.ToArray());
@@ -424,6 +424,7 @@ namespace WindowsFormsApplication7
                     button4.Text = "remove";
                     button5.Text = "add item";
                     button6.Text = "change";
+                    button7.Text = "delete";
                     break;
                 case 1:
                     listView1.Columns[0].Text = "项";
@@ -434,6 +435,7 @@ namespace WindowsFormsApplication7
                     button4.Text = "移除";
                     button5.Text = "添加项";
                     button6.Text = "修改";
+                    button7.Text = "删除";
                     break;
                 default:
                     break;
@@ -530,43 +532,14 @@ namespace WindowsFormsApplication7
 
                         StreamReader sr = new StreamReader(filePath, ecg);
                         MemoryStream stream2 = new MemoryStream(ecg.GetBytes(sr.ReadToEnd()));
-                        //DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(Card));
-                        //Card pp = (Card)ser.ReadObject(stream2);
-
-                        //buf = new ArrayList();
-                        //Card2Al(ref pp, ref buf);
-                        
-                        //cardmemo.Add(buf);
-
-
-                        //listBox1.Items.Clear();
-                        //cursel = cardmemo.Count - 1;
-                        //showname(ref cardmemo);
-
-                        //listView1.Items.Clear();
-                        //showcard(buf);
-
-                        //fplist.Add(filePath);
-
-                        /////////////////////////////////////////
-
                         DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(CardBook));
                         CardBook pcp = (CardBook)ser.ReadObject(stream2);
 
-                        //Card pp = pcp.C[0];
-
                         CardBook2Al(ref pcp, ref cardmemo);
-
-
-                        listBox1.Items.Clear();
                         cursel = cardmemo.Count - 1;
-                        showname(ref cardmemo);
 
-                        buf = (ArrayList)cardmemo[cursel];
-                        listView1.Items.Clear();
-                        showcard(buf);
+                        updbox();
 
-                        //////////////////////////////////////////////
                         sr.Close();
                         stream2.Close();
                         myStream.Close();
@@ -585,17 +558,36 @@ namespace WindowsFormsApplication7
         private void button3_Click(object sender, EventArgs e)
         {
 
-            //Card pp = new Card();
-            //buf = (ArrayList)cardmemo[cursel];
-            //Al2Card(ref pp, ref buf);
+
+
+            if (String.IsNullOrEmpty(filePath))
+            {
+                Stream myStream;
+                SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+
+                saveFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                saveFileDialog1.FilterIndex = 1;
+                saveFileDialog1.RestoreDirectory = true;
+
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    if ((myStream = saveFileDialog1.OpenFile()) != null)
+                    {
+                        // Code to write the stream goes here.
+                        filePath = saveFileDialog1.FileName;
+                        myStream.Close();
+                    }
+                }
+
+            }
+
+
 
             CardBook ppp = new CardBook();
             Al2CardBook(ref ppp, cardmemo);
 
 
             MemoryStream stream1 = new MemoryStream();
-            //DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(Card));
-            //ser.WriteObject(stream1, pp);
 
             DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(CardBook));
             ser.WriteObject(stream1, ppp);
@@ -607,15 +599,10 @@ namespace WindowsFormsApplication7
             string str = sr.ReadToEnd();
             sr.Close();
 
-            
-            //if (String.IsNullOrEmpty(fplist[cursel].ToString()))
-                //fplist[cursel]=getname(cursel)+".txt";
-
-            //StreamWriter sw = new StreamWriter(fplist[cursel].ToString(), false, ecg);
-
-            StreamWriter sw = new StreamWriter(filePath+".txt", false, ecg);
+            StreamWriter sw = new StreamWriter(filePath, false, ecg);
             sw.Write(str);
             sw.Close();
+
 
         }
 
@@ -623,14 +610,9 @@ namespace WindowsFormsApplication7
         {
             if (listView1.SelectedItems.Count > 0)
             {
-                buf = (ArrayList)cardmemo[cursel];
+                ArrayList buf = (ArrayList)cardmemo[cursel];
                 delitms(ref buf, listView1.SelectedIndices);
-                //delitm(ref buf, listView1.SelectedIndices[0]);
-
-                listView1.Items.Clear();
-
-                buf = (ArrayList)cardmemo[cursel];
-                showcard(buf);
+                updview();
             }
             else
                 MessageBox.Show("请先选择要修改的某一行！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -709,12 +691,10 @@ namespace WindowsFormsApplication7
 
             if (frm3.Value != null)
             {
-                buf = (ArrayList)cardmemo[cursel];
+                ArrayList buf = (ArrayList)cardmemo[cursel];
                 additm(ref buf, frm3.Index + 5, frm3.Value);
 
-                listView1.Items.Clear();
-                buf = (ArrayList)cardmemo[cursel];
-                showcard(buf);
+                updview();
             }
 
 
@@ -742,19 +722,17 @@ namespace WindowsFormsApplication7
 
                 if (frm3.Value != null)
                 {
-                    buf = (ArrayList)cardmemo[cursel];
+                    ArrayList buf = (ArrayList)cardmemo[cursel];
                     chgitm(ref buf, listView1.SelectedIndices[0], frm3.Value);
 
                     if (listView1.SelectedIndices[0] == 0)
                     {
-                        listBox1.Items.Clear();
-                        //cursel = cardmemo.Count - 1;
-                        showname(ref cardmemo);
+                        updbox();
                     }
-
-                    listView1.Items.Clear();
-                    buf = (ArrayList)cardmemo[cursel];
-                    showcard(buf);
+                    else
+                    {
+                        updview();
+                    }
                 }
 
             }
@@ -820,20 +798,9 @@ namespace WindowsFormsApplication7
 
             if (frm4.Value != null)
             {
-                //buf = (ArrayList)cardmemo[0];
-                //additm(ref buf, frm3.Index + 5, frm3.Value);
-
                 cardmemo.Add(frm4.Value);
-
-                listBox1.Items.Clear();
                 cursel = cardmemo.Count - 1;
-                showname(ref cardmemo);
-
-                listView1.Items.Clear();
-                buf = (ArrayList)cardmemo[cursel];
-                showcard(buf);
-
-                //fplist.Add("");
+                updbox();
             }
 
 
@@ -842,24 +809,71 @@ namespace WindowsFormsApplication7
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             cursel = listBox1.SelectedIndex;
-            listView1.Items.Clear();
-            buf = (ArrayList)cardmemo[cursel];
-            showcard(buf);
+            updview();
         }
 
-        public void showname(ref ArrayList cm)
+        public int showname(ref ArrayList cm)
         {
             foreach (ArrayList onecard in cm)
             {
                 string cname = ((ArrayList)onecard[0])[lang].ToString();
                 listBox1.Items.Add(cname);
             }
-            listBox1.SelectedIndex = cursel;
+            if (cursel < listBox1.Items.Count)
+                listBox1.SelectedIndex = cursel;
+
+            return listBox1.SelectedIndex;
+
         }
 
         public string getname(int cs)
         {
             return ((ArrayList)((ArrayList)cardmemo[cs])[0])[lang].ToString();
         }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            if (listBox1.SelectedItems.Count > 0)
+            {
+
+                delcards(ref cardmemo, listBox1.SelectedIndices);
+                cursel = 0;
+
+                updbox();
+
+            }
+            else
+                MessageBox.Show("请先选择要修改的某一行！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+
+        public void delcards(ref ArrayList al, ListBox.SelectedIndexCollection indice)
+        {
+            int i = 0;
+            foreach (int ind in indice)
+            {
+                al.RemoveAt(ind - i);
+                i++;
+            }
+        }
+
+
+        public void updview()
+        {
+            listView1.Items.Clear();
+            if (cursel >= 0)
+            {
+                ArrayList buf = (ArrayList)cardmemo[cursel];
+                showcard(buf);
+            }
+        }
+
+        public void updbox()
+        {
+            listBox1.Items.Clear();
+            cursel = showname(ref cardmemo);
+            updview();
+        }
+
     }
 }

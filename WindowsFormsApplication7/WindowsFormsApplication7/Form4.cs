@@ -18,6 +18,7 @@ namespace WindowsFormsApplication7
             InitializeComponent();
         }
 
+        //private int ii=0;
 
         private ArrayList returnal;
 
@@ -37,11 +38,21 @@ namespace WindowsFormsApplication7
                     button1.Text = "OK";
                     button2.Text = "Cancel";
                     ins = "please enter ";
+                    textBox1.ImeMode = ImeMode.Off;
+                    textBox2.ImeMode = ImeMode.Off;
+                    textBox3.ImeMode = ImeMode.Off;
+                    textBox4.ImeMode = ImeMode.Off;
+                    textBox5.ImeMode = ImeMode.Off;
                     break;
                 case 1:
                     button1.Text = "确定";
                     button2.Text = "取消";
                     ins = "请输入";
+                    textBox1.ImeMode = ImeMode.On;
+                    textBox2.ImeMode = ImeMode.On;
+                    textBox3.ImeMode = ImeMode.On;
+                    textBox4.ImeMode = ImeMode.On;
+                    textBox5.ImeMode = ImeMode.On;
                     break;
                 default:
                     break;
@@ -80,7 +91,7 @@ namespace WindowsFormsApplication7
             itmal.Add(textBox5.Text);
             itmal.Add(textBox5.Text);
             returnal.Add(itmal);
-            for (int i = 0; i < 9; i++)
+            for (int i = 6; i <= 14; i++)
             {
                 itmal = new ArrayList();
                 returnal.Add(itmal);
@@ -92,6 +103,13 @@ namespace WindowsFormsApplication7
         {
             returnal = null;
             Close();
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            //ii++;
+            //if (ii > 1) 
+            //MessageBox.Show("L");
         }
 
 
