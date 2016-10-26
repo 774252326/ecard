@@ -12,6 +12,8 @@ using System.Collections;
 using SLAB_HID_TO_UART;
 //using CP2110_DLL;
 
+using Phychips.Rcp;
+using Phychips.Helper;
 
 
 
@@ -1235,6 +1237,46 @@ namespace WindowsFormsApplication3
 
                     //    delete[] buffer;
                     //}
+
+
+                    int discard;
+                    byte[] RCPpkt;
+
+                    ByteBuilder bb = new ByteBuilder();
+
+                    RCPpkt = HexEncoding.GetBytes(transmitStr, out discard);
+                    bb.Append(RCPpkt);
+                    bb.Append(CRCCalculator.Cal_CRC16(RCPpkt));
+                    //tb_debug_CRC.Text = String.Format("{0:X}", CRCCalculator.Cal_CRC16(RCPpkt));
+
+                    uint numBytesWritten = 0;
+                    uint numBytesToWrite = Convert.ToUInt32(bb.Length);
+
+                    int status;
+                    //uint numBytesWritten = 0;
+                    //uint numBytesToWrite = Convert.ToUInt32(transmitStr.Length);
+                    byte[] buffer = bb.GetByteArray();
+
+                    //// Copy ASCII values to the new array
+                    //for (uint i = 0; i < numBytesToWrite; i++)
+                    //{
+                    //    // Use the LSB of the 2-byte unicode value
+                    //    buffer[i] = (byte)transmitStr[(int)i];
+                    //}
+
+                    // Send the UART data to the device to transmit
+                    status = CP2110_DLL.HidUart_Write(m_hidUart, buffer, numBytesToWrite, ref numBytesWritten);
+
+                    // Notify the user that an error occurred
+                    if (status != CP2110_DLL.HID_UART_SUCCESS)
+                    {
+                        String msg;
+                        msg = "Failed to transmit : " + GetHidUartStatusStr(status);
+                        MessageBox.Show(msg);
+                    }
+
+
+
                 }
             }
 
@@ -1303,8 +1345,18 @@ namespace WindowsFormsApplication3
                     //for(uint i=0;i<numBytesRead;i++)
                     //textBox10.AppendText(buffer[i].ToString()+" ");
                     String str;
-                    str = System.Text.Encoding.ASCII.GetString(buffer);
-                    //str = System.Text.Encoding.Default.GetString(buffer);
+
+                    if (radioButton1.Checked)
+                    {
+                        str = System.Text.Encoding.ASCII.GetString(buffer);
+                        //str = System.Text.Encoding.Default.GetString(buffer);
+                    }
+                    else
+                    {
+                        ByteBuilder bb=new ByteBuilder(buffer);
+                        str = HexEncoding.ToString(bb.GetByteArray(0,(int)numBytesRead));
+                    }
+
                     textBox10.AppendText(str + "\n");
 
                 }
